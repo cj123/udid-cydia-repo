@@ -1,69 +1,60 @@
 <?php
 
-function checkUDID($udid, $method) {
-	switch($method) {
-		default:
-		case "list":
-			// list of udids, comma separated
-			$acceptedUDID = array('udid1', 'udid2');
-			if (in_array($udid, $acceptedUDID))
-				return true;
-			else
-				return false;
-		break;
+require_once("./config.php");
 
-		case "database":
+$protocol = $_SERVER["SERVER_PROTOCOL"];
+function lolerror($exit) {
+	global $protocol;
+	header(sprintf("%s %s", $protocol, $exit));
+}
+
+function checkUDID($udid) {
+	switch (UDID_METHOD) {
+		case UDIDCheckMethod::UseList:
+			if (!($list = unserialize(UDID_LIST))) {
+				lolerror("500 Internal Server Error");
+				exit(1);
+			}
+			return in_array($udid, $list);
+
+		case UDIDCheckMethod::UseDatabase:
 			// udids from database
 			// connect to pdo
-			$dbh = new PDO('mysql: host=localhost; dbname=ios', 'root', 'password');
+			$dbh = new PDO(sprintf('mysql: host=%s; dbname=%s', UDID_DB_HOST, UDID_DB_DBNAME), UDID_DB_USER, UDID_DB_PASSWORD);
+			$stmt = $dbh->prepare(sprintf("SELECT * FROM %s WHERE (%s) = (?);", UDID_DB_UDIDTABLE, UDID_DB_UDIDCOLUMN));
+			if (!$stmt->execute(array($udid))) {
+				lolerror("500 Internal Server Error");
+				exit(1);
+			}
 			
-			$stmt = $dbh->prepare("SELECT * FROM udids WHERE (udid) = (?);");
-			
-			$stmt->execute(array($udid));
-			$result_count = $stmt->fetchAll(PDO::FETCH_ASSOC);
-			
-			if(count($result_count) == 1)
-				return true;
-			else
-				return false;
-		break;
+			return (boolean)$stmt->fetch(PDO::FETCH_ASSOC);
+		
+		default:
 	}
 }
 
 $udid = $_SERVER["HTTP_X_UNIQUE_ID"];
-$file = $_GET["request"];
+if (!$udid) { lolerror("403 Bad Request"); return; }
 
-// choose your method!
-$method = "database";
+$request = $_GET["request"];
+if (!file_exists($request)) { lolerror("404 Not Found"); return; }
 
-if(checkUDID($udid, $method)) {
-	if($file == "release") {
-
-		// Release File
-		// see http://www.saurik.com/id/7 for more info
-		echo "Origin: UUID Restricted Repo" . "\n";
-		echo "Label: Cydia Example" . "\n";
-		echo "Suite: stable" . "\n";
-		echo "Version: 0.1" . "\n";
-		echo "Codename: tangelo" . "\n";
-		echo "Architectures: iphoneos-arm" . "\n";
-		echo "Components: main" . "\n";
-		echo "Description: An Example UUID Restricted Repository" . "\n";
-
-	} elseif($file == "packages") {
-
-		// place the Packages.bz2 file in the same directory as this
-		$filename = "Packages.bz2";
-
-		// serve Packages.bz2 if auth'd
-		header("Content-Type: application/bzip2");
-		header('Content-Disposition: attachment; filename="Packages.bz2"');
-		echo readfile($filename);
-
-	} else {
-		header("Status: 403 Bad Request");
+if (checkUDID($udid)) {
+	$extension = pathinfo($request, PATHINFO_EXTENSION);
+	if ($extension) {
+		$mimemap = array(
+			"bz2" => "application/bzip2",
+			"gz" => "application/x-gzip",
+			"xz" => "application/x-xz",
+			"lzma" => "application/x-lzma",
+			"lz" => "application/x-lzip");
+		
+		header(sprintf("Content-Type: %s", $mimemap[$extension]));
+		header(sprintf("Content-Disposition: attachment; filename=\"%s\"", $request));
 	}
-} else {
-	// not found
-	header("Status: 404 Not Found");
+	
+	echo readfile($request);
 }
+else { lolerror("403 Forbidden"); }
+
+?>
