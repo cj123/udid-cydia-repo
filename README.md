@@ -10,22 +10,22 @@
 
 ## Config.php Reference
 
-* UDID\_METHOD: One of UDIDCheckMethod::UseList and UDIDCheckMethod::UseDatabase.
-	* `UseList`: Checks config.php-defined `UDID\_LIST` – a serialized array – for accepted UDIDs.
-	* `UseDatabase`: Checks a database specified in `UDID\_DB\_*` for accepted UDIDs.
+* **UDID\_METHOD**: One of UDIDCheckMethod::UseList and UDIDCheckMethod::UseDatabase.
+	* `UseList`: Checks config.php-defined `UDID_LIST` – a serialized array – for accepted UDIDs.
+	* `UseDatabase`: Checks a database specified in `UDID_DB_*` for accepted UDIDs.
 
-* UDID\_LIST: Serialized PHP array of strings which represent accepted UDIDs.
+* **UDID\_LIST**: Serialized PHP array of strings which represent accepted UDIDs.
 
-* UDID\_DB\_HOST: Hostname for database.
-* UDID\_DB\_DBNAME: Database name for database.
-* UDID\_DB\_USER: User name for database.
-* UDID\_DB\_PASSWORD: Password for database.
-* UDID\_DB\_UDIDTABLE: Table name for UDIDs.
-* UDID\_DB\_UDIDCOLUMN: Column name for UDIDs.
+* **UDID\_DB\_HOST**: Hostname for database.
+* **UDID\_DB\_DBNAME**: Database name for database.
+* **UDID\_DB\_USER**: User name for database.
+* **UDID\_DB\_PASSWORD**: Password for database.
+* **UDID\_DB\_UDIDTABLE**: Table name for UDIDs.
+* **UDID\_DB\_UDIDCOLUMN**: Column name for UDIDs.
 
 ## Return Codes
 
-* In the case of `UDID\_LIST` or `UDID\_DB*` misdefinition, a `500 Internal Server Error` header will be returned.
+* In the case of `UDID_LIST` or `UDID_DB_*` misdefinition, a `500 Internal Server Error` header will be returned.
 
 * In case of failure obtaining `Release`/`Packages` files, a `404 Not Found` header will be returned.
 
