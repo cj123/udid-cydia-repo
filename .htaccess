@@ -2,4 +2,4 @@ DirectoryIndex repo.php
 RewriteEngine On
 
 RewriteBase /your_repo_folder/
-RewriteRule ^(Packages|Release)(.bz2|.gz|.xz|.lzma|.lz)?$ repo.php?request=%{REQUEST_FILENAME}
+RewriteRule ^(Packages|Release|your.pkg.id.if.not.too.many)(.bz2|.gz|.xz|.lzma|.lz|.deb)?$ repo.php?request=%{REQUEST_FILENAME}
